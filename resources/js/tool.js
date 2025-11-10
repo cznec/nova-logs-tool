@@ -1,6 +1,6 @@
 import Tool from './pages/Tool.vue'
 import '../css/tool.css'
 
-Nova.booting((Vue, router, store) => {
+Nova.booting((app, store) => {
     Nova.inertia('NovaLogs', Tool);
 });

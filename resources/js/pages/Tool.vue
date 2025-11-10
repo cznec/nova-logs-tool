@@ -97,8 +97,8 @@
                     :type="!item.selected ? 'gray' : ''"
                 >
                     <Icon
-                        :type="icons[item.level.value || 'error']"
-                        view-box="0 0 24 24"
+                        :name="icons[item.level.value || 'error']"
+                        type="outline"
                         width="18"
                         height="18"
                         class="mr-1"
@@ -170,12 +170,12 @@
                                         class="px-2 py-2 border-t border-gray-100 dark:border-gray-700 whitespace-nowrap cursor-pointer dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-900"
                                     >
                                         <Icon
-                                            :type="
+                                            :name="
                                                 icons[
                                                     log.level.value || 'error'
                                                 ]
                                             "
-                                            view-box="0 0 24 24"
+                                            type="outline"
                                             width="24"
                                             height="24"
                                             :style="{
@@ -224,8 +224,8 @@
                                     >
                                         <span @click="viewLog(log)">
                                             <Icon
-                                                type="eye"
-                                                view-box="0 0 24 24"
+                                                name="eye"
+                                                type="outline"
                                                 width="24"
                                                 height="24"
                                             />
@@ -241,7 +241,8 @@
                         class="flex flex-col justify-center items-center px-6 py-8"
                     >
                         <Icon
-                            type="search"
+                            name="magnifying-glass"
+                            type="outline"
                             class="mb-3 text-gray-300 dark:text-gray-500"
                             width="50"
                             height="50"
@@ -252,60 +253,18 @@
                         </h3>
                     </div>
 
-                    <div class="bg-20 rounded-b">
-                        <nav
-                            v-if="files.length && logs.data.length > 0"
-                            class="flex justify-between"
-                        >
-                            <!-- Previous Link -->
-                            <button
-                                :disabled="logs.onFirstPage"
-                                class="btn btn-link py-3 px-4"
-                                :class="{
-                                    'text-primary dim': !logs.onFirstPage,
-                                    'text-80 opacity-50': logs.onFirstPage,
-                                }"
-                                rel="prev"
-                                @click.prevent="getLogs(logs.prevPage)"
-                                dusk="previous"
-                            >
-                                {{ __("Previous") }}
-                            </button>
-
-                            <div class="hidden md:flex">
-                                <button
-                                    class="btn btn-link py-3 px-3 text-50 dim"
-                                    v-for="page in logs.elements"
-                                    :class="{
-                                        'text-primary dim': page.active,
-                                        'text-80 opacity-50': !page.active,
-                                    }"
-                                    :disabled="
-                                        page.page === logs.currentPage ||
-                                        typeof page.page !== 'number'
-                                    "
-                                    @click.prevent="getLogs(page.page)"
-                                >
-                                    {{ page.page }}
-                                </button>
-                            </div>
-
-                            <!-- Next Link -->
-                            <button
-                                :disabled="!logs.hasMorePages"
-                                class="btn btn-link py-3 px-4"
-                                :class="{
-                                    'text-primary dim': logs.hasMorePages,
-                                    'text-80 opacity-50': !logs.hasMorePages,
-                                }"
-                                rel="next"
-                                @click.prevent="getLogs(logs.nextPage)"
-                                dusk="next"
-                            >
-                                {{ __("Next") }}
-                            </button>
-                        </nav>
-                    </div>
+                    <PaginationLinks
+                        v-if="files.length && logs.data.length > 0"
+                        :page="logs.currentPage"
+                        :pages="logs.lastPage"
+                        :next="logs.hasMorePages"
+                        :previous="!logs.onFirstPage"
+                        @page="getLogs"
+                    >
+                        <span class="text-xs px-4 ml-auto hidden md:inline">
+                            {{ logs.from }}-{{ logs.end }} of {{ logs.total }}
+                        </span>
+                    </PaginationLinks>
                 </div>
 
                 <div
@@ -331,52 +290,68 @@
                 @click.prevent="() => (showLog = false)"
             ></div>
             <div
-                class="relative p-3 md:p-6 bg-white dark:bg-gray-800 rounded-lg shadow min-w-80 md:w-1/2 max-w-full max-h-full overflow-y-auto"
+                class="relative p-6 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 min-w-80 md:w-2/3 lg:w-3/4 max-w-full max-h-[90vh] overflow-y-auto"
             >
-                <div
-                    class="absolute top-0 right-0 w-5 cursor-pointer hover:opacity-75 text-lg"
+                <button
+                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     @click.prevent="() => (showLog = false)"
                 >
-                    &#x2715;
-                </div>
+                    <Icon name="x-mark" type="outline" width="24" height="24" />
+                </button>
 
-                <div class="flex items-center text-lg font-bold mb-5">
-                    <Icon
-                        :type="icons[showLog.level.value || 'error']"
-                        view-box="0 0 24 24"
-                        width="32"
-                        height="32"
+                <div class="flex items-center mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <div
+                        class="flex items-center justify-center w-12 h-12 rounded-lg"
                         :style="{
-                            color: colors[showLog.level.value || 'error'],
+                            backgroundColor: colors[showLog.level.value || 'error'] + '20',
                         }"
-                    />
+                    >
+                        <Icon
+                            :name="icons[showLog.level.value || 'error']"
+                            type="outline"
+                            width="28"
+                            height="28"
+                            :style="{
+                                color: colors[showLog.level.value || 'error'],
+                            }"
+                        />
+                    </div>
 
-                    <span class="ml-2">
-                        {{ showLog.level.value.toUpperCase() }}
-                    </span>
+                    <div class="ml-4">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
+                            {{ capitalizeFirstLetter(showLog.level.value) }}
+                        </h3>
+                        <div class="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            <span class="flex items-center gap-1">
+                                <Icon name="globe-alt" type="outline" width="14" height="14" />
+                                {{ showLog.environment }}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <Icon name="clock" type="outline" width="14" height="14" />
+                                {{ formattedDateTime(showLog.time) }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mt-3 mb-4">
-                    {{ showLog.environment }}
+                <div class="mb-3">
+                    <h4 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
+                        {{ __("Details") }}
+                    </h4>
+                    <pre
+                        v-if="showLog.fullText"
+                        v-text="showLog.fullText"
+                        class="block p-4 rounded-lg bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 w-full text-left font-mono text-xs leading-relaxed overflow-x-auto text-gray-800 dark:text-gray-300"
+                        style="white-space: pre-wrap; word-wrap: break-word"
+                    ></pre>
                 </div>
 
-                <div class="mt-3 mb-4">
-                    {{ formattedDateTime(showLog.time) }}
-                </div>
-
-                <pre
-                    v-if="showLog.fullText"
-                    v-text="showLog.fullText"
-                    class="block p-4 rounded-lg bg-gray-100 dark:bg-gray-900 w-full text-left"
-                    style="white-space: pre-wrap; word-wrap: break-word"
-                ></pre>
-
-                <div class="flex items-center space-x-3 mt-5">
+                <div class="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <Button
                         type="gray"
                         @click.prevent="() => (showLog = false)"
                     >
-                        {{ __("Cancel") }}
+                        {{ __("Close") }}
                     </Button>
                 </div>
             </div>
@@ -434,6 +409,9 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import api from "../api";
 import Button from "../components/Button.vue";
 import ToolbarButton from "../components/ToolbarButton.vue";
+import Icon from "@ui/components/Icon.vue";
+import Loader from "@ui/components/Loader.vue";
+import PaginationLinks from "@/components/Pagination/PaginationLinks.vue";
 import { DateTime } from "luxon";
 
 const loading = ref(true);
@@ -455,12 +433,12 @@ const logs = ref();
 const icons = {
     alert: "bell",
     critical: "shield-exclamation",
-    debug: "code",
-    emergency: "speakerphone",
+    debug: "code-bracket",
+    emergency: "megaphone",
     error: "exclamation-circle",
     info: "information-circle",
-    notice: "annotation",
-    warning: "exclamation",
+    notice: "chat-bubble-bottom-center-text",
+    warning: "exclamation-triangle",
 };
 
 const colors = {

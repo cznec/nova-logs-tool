@@ -1,5 +1,5 @@
 {
-    "name": "stepanenko3/nova-logs-tool",
+    "name": "cznec/nova-logs-tool",
     "description": "A Laravel Nova tool to manage and keep track of each one of your logs files.",
     "keywords": [
         "laravel",
